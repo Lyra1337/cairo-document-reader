@@ -1,23 +1,16 @@
 ﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Newtonsoft.Json;
-using NJsonSchema;
 using OllamaSharp;
 using OllamaSharp.Models;
 using OllamaSharp.Models.Chat;
-using OpenAI;
-using OpenAI.Chat;
 using UglyToad.PdfPig;
 
 namespace DocumentReader
 {
     internal class Program
     {
-        private static string schema = JsonSchema.FromSampleJson(JsonConvert.SerializeObject(new[] { new SingleDocument(), new SingleDocument() })).ToJson();
-
         static async Task Main(string[] args)
         {
             List<FileInfo> documents = [];
@@ -44,7 +37,7 @@ namespace DocumentReader
 
             DebugOutput($"Split {content.Count} documents.");
 
-            Console.WriteLine(JsonConvert.SerializeObject(content));
+            Console.WriteLine(JsonSerializer.Serialize(content));
         }
 
         private static async Task<List<DocumentInfo>> SplitDocumentsAsync(List<DocumentInfo> documents)
@@ -138,7 +131,7 @@ namespace DocumentReader
                 DebugOutput(content);
             }
 
-            var splitDocuments = JsonConvert.DeserializeObject<List<SingleDocument>>(responseText.ToString())!
+            var splitDocuments = JsonSerializer.Deserialize<List<SingleDocument>>(responseText.ToString())!
                 .Select(x => new DocumentInfo()
                 {
                     documentid = HashContent(x.Content),
@@ -156,6 +149,40 @@ namespace DocumentReader
             }
 
             return splitDocuments;
+        }
+
+
+        private static async Task<string> CallOllama(string prompt, string? systemPrompt = null, string model = "llama3.2:latest")
+        {
+            var uri = new Uri("http://localhost:11434");
+            var ollama = new OllamaApiClient(uri);
+
+            ollama.SelectedModel = model;
+
+            var request = new GenerateRequest()
+            {
+                Model = model,
+                Prompt = prompt,
+                System = systemPrompt,
+                Stream = false
+            };
+
+            var response = ollama.GenerateAsync(request);
+
+            var responseText = new StringBuilder();
+
+            await foreach (var result in response)
+            {
+                if (result?.Response is null)
+                {
+                    continue;
+                }
+                var content = result!.Response;
+                responseText.Append(content);
+                DebugOutput(content);
+            }
+
+            return responseText.ToString();
         }
 
         private static IEnumerable<DocumentInfo> ReadDocuments(List<FileInfo> documents)
