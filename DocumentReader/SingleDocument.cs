@@ -1,7 +1,6 @@
-﻿namespace DocumentReader
+﻿namespace DocumentReader;
+
+public class SingleDocument
 {
-    public class SingleDocument
-    {
-        public string Content { get; set; } = "";
-    }
+    public string Content { get; set; } = "";
 }
