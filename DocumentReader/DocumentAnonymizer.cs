@@ -12,7 +12,7 @@ internal class DocumentAnonymizer
         {
             var result = await OllamaService.Prompt(
                 prompt: doc.content,
-                systemPrompt: "Anonymize the following text. Do not change the meaning of the text, but replace all names, addresses, zip codes, and other identifying information with random ones. Only respond with with the anonymized Text, no other Output.",
+                systemPrompt: "Anonymize the following text. Do not change the meaning of the text, but replace all names, addresses, zip codes, and other identifying information with random ones. Do not add any information. Only respond with with the anonymized Text, no other Output.",
                 model: "llama3.2:latest"
             );
 

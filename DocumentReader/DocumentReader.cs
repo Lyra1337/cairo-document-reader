@@ -18,7 +18,7 @@ internal class DocumentReader
 
         if (documents.Any() == false) // for debugging
         {
-            documents.AddRange(GetAllFiles("C:\\temp\\document-input"));
+            documents.AddRange(GetAllFiles("C:\\temp\\document-input-small"));
         }
 
         DebugOutput($"Found {documents.Count} documents to process.");
